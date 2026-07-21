@@ -1,25 +1,35 @@
 #!/usr/bin/env bash
-# Configures nginx (from scratch on a brand new Ubuntu machine) with:
-#   - / returning "Holberton School"
-#   - /redirect_me returning a 301 redirect
-#   - a custom 404 page containing "Ceci n'est pas une page"
+# script that install nginx and configure it to redirect to another page when
+# accessing the /redirect_me page.
+sudo apt update -y
+sudo apt install nginx -y
 
-apt-get update -y
-apt-get install -y nginx
+mkdir /etc/nginx/html
+touch /etc/nginx/html/index.html
+touch /etc/nginx/html/404.html
+echo "Holberton School" > /etc/nginx/html/index.html
+echo "Ceci n'est pas une page" > /etc/nginx/html/404.html
 
-echo "Holberton School for the win!" > /var/www/html/index.nginx-debian.html
-echo "Ceci n'est pas une page" > /var/www/html/404.html
-
-CONFIG_FILE="/etc/nginx/sites-available/default"
-
-# Redirect rule (idempotent)
-sed -i "/redirect_me/,+2d" "$CONFIG_FILE"
-sed -i "/server_name _;/a\\
-\\trewrite ^/redirect_me/?$ https://www.youtube.com/watch?v=QH2-TGUlwu4 permanent;" "$CONFIG_FILE"
-
-# Custom 404 error page (idempotent)
-sed -i "/error_page 404/d" "$CONFIG_FILE"
-sed -i "/server_name _;/a\\
-\\terror_page 404 /404.html;" "$CONFIG_FILE"
-
-service nginx restart || /etc/init.d/nginx restart
+# store configuration content
+new_config=\
+"server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+               root /var/www/html;
+        index index.html index.htm index.nginx-debian.html;
+        server_name _;
+        location / {
+                try_files \$uri \$uri/ =404;
+        }
+        location /redirect_me { 
+            return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+        }
+	error_page 404 /404.html;
+	location /404 {
+	    root /etc/nginx/html;
+	    internal;
+        }
+}
+"
+echo "$new_config" > /etc/nginx/sites-available/default
+sudo service nginx restart

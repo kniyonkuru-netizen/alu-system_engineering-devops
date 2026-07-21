@@ -1,20 +1,26 @@
 #!/usr/bin/env bash
-# Configures nginx (from scratch on a brand new Ubuntu machine) so that
-# /redirect_me returns a 301 Moved Permanently redirect, and the root page
-# still returns "Holberton School".
+# script that install nginx and configure it to redirect to another page when
+# accessing the /redirect_me page.
+sudo apt update -y
+sudo apt install nginx -y
 
-apt-get update -y
-apt-get install -y nginx
-
-echo "Holberton School for the win!" > /var/www/html/index.nginx-debian.html
-
-CONFIG_FILE="/etc/nginx/sites-available/default"
-
-# Remove any pre-existing redirect_me rule to keep this script idempotent
-sed -i "/redirect_me/,+2d" "$CONFIG_FILE"
-
-# Insert the redirect rule right after the "server_name" line, using sed
-sed -i "/server_name _;/a\\
-\\trewrite ^/redirect_me/?$ https://www.youtube.com/watch?v=QH2-TGUlwu4 permanent;" "$CONFIG_FILE"
-
-service nginx restart || /etc/init.d/nginx restart
+sudo mkdir /etc/nginx/html
+sudo touch /etc/nginx/html/index.html
+# store configuration content
+new_config=\
+"server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+               root /var/www/html;
+        index index.html index.htm index.nginx-debian.html;
+        server_name _;
+        location / {
+                try_files \$uri \$uri/ =404;
+        }
+        location /redirect_me { 
+            return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+        }
+}
+"
+echo "$new_config" > /etc/nginx/sites-available/default
+sudo service nginx restart
