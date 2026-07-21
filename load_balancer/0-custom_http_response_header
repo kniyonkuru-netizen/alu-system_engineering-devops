@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #Installing Nginx and configuring it
-sudo apt update -y # update package manager to get latest updates when installing ngi..
+sudo apt update -y # update package manager to get latest updates when installing ngi.
 sudo apt install nginx -y # instal nginx
 new_config=\
 "server {
