@@ -5,12 +5,15 @@ apt-get -y install software-properties-common
 add-apt-repository ppa:vbernat/haproxy-1.8
 apt-get update
 apt-get -y install haproxy
-echo "ENABLED=1" >> /etc/default/haproxy
-printf %s "listen 7103-webs
+grep -q "^ENABLED=1" /etc/default/haproxy || echo "ENABLED=1" >> /etc/default/haproxy
+
+if ! grep -q "^listen 7103-webs" /etc/haproxy/haproxy.cfg; then
+	printf %s "listen 7103-webs
     bind *:80
     mode http
     balance roundrobin
     server 7103-web-02 54.164.142.39:80 check
     server 7103-web-01 3.95.245.12:80 check
 " >> /etc/haproxy/haproxy.cfg
+fi
 sudo service haproxy restart
