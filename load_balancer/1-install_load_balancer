@@ -12,8 +12,8 @@ if ! grep -q "^listen 7103-webs" /etc/haproxy/haproxy.cfg; then
     bind *:80
     mode http
     balance roundrobin
-    server 7103-web-02 54.164.142.39:80 check
     server 7103-web-01 3.95.245.12:80 check
+    server 7103-web-02 54.164.142.39:80 check
 " >> /etc/haproxy/haproxy.cfg
 fi
 sudo service haproxy restart
